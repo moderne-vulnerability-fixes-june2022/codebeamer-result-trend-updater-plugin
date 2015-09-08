@@ -57,7 +57,7 @@ public class WikiMarkupBuilder {
     }
 
     public WikiMarkupBuilder withTestReportInfo(TestResultDto testResultDto) {
-        String titleColor = testResultDto.getTotalCount() == 0 ? SUCCESS_TITLE_COLOR : FAIL_TITLE_COLOR;
+        String titleColor = testResultDto.getFailCount() == 0 ? SUCCESS_TITLE_COLOR : FAIL_TITLE_COLOR;
         return this.withTitleColor(titleColor)
                 .withTestDuration(testResultDto.getFormattedTestDuration())
                 .withFailedDifference(testResultDto.getFailedDifference())

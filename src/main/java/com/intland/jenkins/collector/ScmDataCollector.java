@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2015 Intland Software (support@intland.com)
  */
-
 package com.intland.jenkins.collector;
 
 import com.intland.jenkins.api.CodebeamerApiClient;
@@ -9,12 +8,12 @@ import com.intland.jenkins.collector.dto.ScmDto;
 import com.intland.jenkins.util.PluginUtil;
 import hudson.model.AbstractBuild;
 import hudson.plugins.git.Branch;
+import hudson.plugins.git.GitChangeSet;
 import hudson.plugins.git.util.BuildData;
 import hudson.plugins.mercurial.MercurialTagAction;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionTagAction;
-import jenkins.model.Jenkins;
 import org.tmatesoft.svn.core.SVNException;
 
 import java.io.IOException;
@@ -57,13 +56,25 @@ public class ScmDataCollector {
         for (ChangeLogSet.Entry entry : build.getChangeSet()) {
             String author = entry.getAuthor().toString();
             String userId = apiClient.getUserId(author);
-            String commitMessage = getCodebeamerTaskLink(entry.getMsg());
+            String commitMessage = getCommitMessage(entry);
+            String commitMessageWithTaskLink = getCodebeamerTaskLink(commitMessage);
             String formattedUser = userId == null ? String.format("(%s)", author) : String.format("([USER:%s])", userId);
 
-            changes += String.format("* %s %s\\n", commitMessage, formattedUser);
+            changes += String.format("* %s %s\\n", commitMessageWithTaskLink, formattedUser);
         }
 
         return new ScmDto(repositoryLine, changes);
+    }
+
+    //Special treatment for git, entry.getMsg() truncates multiline git comments
+    private static String getCommitMessage(ChangeLogSet.Entry entry) {
+        String resultWithNewlines = entry.getMsg();
+        if (entry instanceof GitChangeSet) {
+            resultWithNewlines = ((GitChangeSet) entry).getComment();
+        }
+
+        String result = resultWithNewlines.replaceAll("\\n", " ");
+        return result;
     }
 
     private static String getCodebeamerTaskLink(String gitCommitMessage) {
