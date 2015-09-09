@@ -60,7 +60,7 @@ public class ScmDataCollector {
             String commitMessageWithTaskLink = getCodebeamerTaskLink(commitMessage);
             String formattedUser = userId == null ? String.format("(%s)", author) : String.format("([USER:%s])", userId);
 
-            changes += String.format("* %s %s\\n", commitMessageWithTaskLink, formattedUser);
+            changes += String.format("* %s %s\n", commitMessageWithTaskLink, formattedUser);
         }
 
         return new ScmDto(repositoryLine, changes);
@@ -68,12 +68,12 @@ public class ScmDataCollector {
 
     //Special treatment for git, entry.getMsg() truncates multiline git comments
     private static String getCommitMessage(ChangeLogSet.Entry entry) {
-        String resultWithNewlines = entry.getMsg();
+        String resultUnescaped = entry.getMsg();
         if (entry instanceof GitChangeSet) {
-            resultWithNewlines = ((GitChangeSet) entry).getComment();
+            resultUnescaped = ((GitChangeSet) entry).getComment();
         }
 
-        String result = resultWithNewlines.replaceAll("\\n", " ");
+        String result = resultUnescaped.replaceAll("\\n", " ").replaceAll("\\t", " ");
         return result;
     }
 

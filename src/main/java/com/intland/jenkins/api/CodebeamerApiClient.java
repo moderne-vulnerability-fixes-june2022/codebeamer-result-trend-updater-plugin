@@ -6,6 +6,7 @@ package com.intland.jenkins.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intland.jenkins.api.dto.AttachmentDto;
+import com.intland.jenkins.api.dto.MarkupDto;
 import com.intland.jenkins.api.dto.UserDto;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -63,20 +64,15 @@ public class CodebeamerApiClient {
 
     public String getWikiMarkup(String url, String wikiId) throws IOException {
         String tmpUrl = String.format("%s/rest/wikipage/%s", url, wikiId);
-
-        //Fetch Page
-        StringBuilder wikiContent = new StringBuilder(get(tmpUrl));
-
-        //copy content
-        String startString = "\"markup\" : \"";
-        int startIndex = wikiContent.indexOf(startString) + startString.length();
-        int endIndex = wikiContent.indexOf("\"", startIndex + 1);
-        return wikiContent.substring(startIndex, endIndex);
+        String json = get(tmpUrl);
+        MarkupDto markupDto = objectMapper.readValue(json, MarkupDto.class);
+        return markupDto.getMarkup();
     }
 
     public void updateWikiMarkup(String url, String wikiId, String markup) throws IOException {
         HttpPut put = new HttpPut(String.format("%s/rest/wikipage", url));
-        String content = String.format("{ \"uri\" : \"/wikipage/%s\", \"markup\" : \"%s\"}", wikiId, markup);
+        MarkupDto markupDto = new MarkupDto("/wikipage/"+wikiId, markup);
+        String content = objectMapper.writeValueAsString(markupDto);
 
         StringEntity stringEntity = new StringEntity(content,"UTF-8");
         stringEntity.setContentType("application/json");
