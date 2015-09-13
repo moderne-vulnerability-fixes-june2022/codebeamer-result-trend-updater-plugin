@@ -53,14 +53,12 @@ public class PostBuildScript extends Notifier {
         String wikiId = wikiUrlMatcher.group(2);
 
         CodebeamerApiClient apiClient = new CodebeamerApiClient(username, password, url, wikiId);
-        StringBuilder markup = new StringBuilder(apiClient.getWikiMarkup(url, wikiId));
 
         long currentTime = System.currentTimeMillis();
         CodebeamerDto codebeamerDto = CodebeamerCollector.collectCodebeamerData(build, listener, apiClient, currentTime);
-        markup.insert(markup.indexOf("}]") + 2, codebeamerDto.getMarkup());
 
         listener.getLogger().println("Starting wiki update");
-        apiClient.updateWikiMarkup(url, wikiId, markup.toString());
+        apiClient.updateWikiMarkup(url, wikiId, codebeamerDto.getMarkup());
         listener.getLogger().println("Wiki update finished");
 
         apiClient.createOrUpdateAttachment(codebeamerDto.getAttachmentName(), codebeamerDto.getAttachmentContent());

@@ -62,8 +62,8 @@ public class CodebeamerApiClient {
         }
     }
 
-    public String getWikiMarkup(String url, String wikiId) throws IOException {
-        String tmpUrl = String.format("%s/rest/wikipage/%s", url, wikiId);
+    public String getWikiMarkup() throws IOException {
+        String tmpUrl = String.format("%s/rest/wikipage/%s", baseUrl, wikiId);
         String json = get(tmpUrl);
         MarkupDto markupDto = objectMapper.readValue(json, MarkupDto.class);
         return markupDto.getMarkup();

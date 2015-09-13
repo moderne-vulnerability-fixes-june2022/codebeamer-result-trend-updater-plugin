@@ -17,9 +17,13 @@ import java.io.IOException;
 public class CodebeamerCollector {
     private static final String TESTREPORT_ATTACHMENT_NAME = "jenkinsbuildtrends.csv";
     private static final String PERFORMANCE_ATTACHMENT_NAME = "jenkinsperformancetrends.csv";
+    private static final String TESTREPORT_DEFAULT_MARKUP = "[{JenkinsBuildTrends}]";
+    private static final String PERFORMANCE_DEFAULT_MARKUP= "[{JenkinsPerformanceTrends}]";
 
     public static CodebeamerDto collectCodebeamerData(AbstractBuild<?, ?> build, BuildListener listener,
                                                       CodebeamerApiClient apiClient, long currentTime) throws IOException {
+        String currentMarkupContent = apiClient.getWikiMarkup();
+
         String newMarkupContent;
         String newAttachmentContent;
         String attachmentName;
@@ -29,6 +33,8 @@ public class CodebeamerCollector {
 
         if (PluginUtil.isPerformancePluginInstalled() && build.getAction(PerformanceBuildAction.class) != null) {
             attachmentName = PERFORMANCE_ATTACHMENT_NAME;
+            currentMarkupContent = insertChartIfNoPluginPresent(currentMarkupContent, PERFORMANCE_DEFAULT_MARKUP);
+
             PerformanceDto performanceDto = PerformanceDataCollector.collectPerformanceDto(build);
             newAttachmentContent = CsvUtil.convertDtoToPerformanceRow(performanceDto, currentTime);
 
@@ -40,6 +46,8 @@ public class CodebeamerCollector {
                     .build();
         } else {
             attachmentName = TESTREPORT_ATTACHMENT_NAME;
+            currentMarkupContent = insertChartIfNoPluginPresent(currentMarkupContent, TESTREPORT_DEFAULT_MARKUP);
+
             TestResultDto testResultDto = TestResultCollector.collectTestResultData(build, listener);
             newAttachmentContent = CsvUtil.convertDtoToTestResultRow(buildDto, testResultDto, currentTime);
 
@@ -51,6 +59,22 @@ public class CodebeamerCollector {
                     .build();
         }
 
-        return new CodebeamerDto(newMarkupContent, newAttachmentContent, attachmentName);
+        StringBuilder markupBuilder = new StringBuilder(currentMarkupContent);
+        markupBuilder.insert(markupBuilder.indexOf("}]") + 2, newMarkupContent);
+
+        return new CodebeamerDto(markupBuilder.toString(), newAttachmentContent, attachmentName);
+    }
+
+    public static String insertChartIfNoPluginPresent(String currentMarkup, String defaultMarkup) {
+        if (currentMarkup == null) {
+            currentMarkup = "";
+        }
+
+        int index = currentMarkup.indexOf("}]");
+        if (index == -1) {
+            return defaultMarkup + currentMarkup;
+        } else {
+            return currentMarkup;
+        }
     }
 }
