@@ -73,7 +73,7 @@ public class ScmDataCollector {
             resultUnescaped = ((GitChangeSet) entry).getComment();
         }
 
-        String result = resultUnescaped.replaceAll("\\n", " ").replaceAll("\\t", " ");
+        String result = resultUnescaped.replaceAll("\\n", "\\\\\\\\").replaceAll("\\t", " ");
         return result;
     }
 
