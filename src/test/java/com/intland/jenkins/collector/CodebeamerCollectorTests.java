@@ -58,8 +58,8 @@ public class CodebeamerCollectorTests {
                 "[{Table\n\n|__Duration__\n|[1 min, 15 sec|http://localhost:8080/jenkins/myproject/01/buildTimeTrend] @ Jenkins\n\n" +
                 "| \n__Test Result__ \n|__[0/0|http://localhost:8080/jenkins/myproject/01/testReport/] failures__ \n\n" +
                 "|__[Tested changes|http://localhost:8080/jenkins/myproject/01/changes]__\n|__\n" +
-                "* [#1000|ISSUE:1000] commit message (admin)\n" +
-                "* [#1000|ISSUE:1000] commit message (admin)\n \n\n" +
+                "* [#1000|ISSUE:1000]  \\\\* bullet 1  \\\\* second row (admin)\n" +
+                "* [#1000|ISSUE:1000]  \\\\* bullet 1  \\\\* second row (admin)\n \n\n" +
                 "|__Repository__\n|Unsupported SCM\n}] \n";
 
         long currentTime = 75000l;
@@ -85,7 +85,7 @@ public class CodebeamerCollectorTests {
         when(pluginWrapper.getVersion()).thenReturn("10.x.x");
         when(jenkins.getRootUrl()).thenReturn("http://localhost:8080/jenkins/");
         when(build.getUrl()).thenReturn("myproject/01/");
-        DummyEntry entry = new DummyEntry("#1000 commit message", user);
+        DummyEntry entry = new DummyEntry("#1000\n* bullet 1\n* second row\n", user);
         ChangeLogSet changeLogSet = new DummyChangelog(entry, entry);
         when(build.getChangeSet()).thenReturn(changeLogSet);
     }
