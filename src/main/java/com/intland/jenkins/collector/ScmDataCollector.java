@@ -9,6 +9,7 @@ import com.intland.jenkins.util.PluginUtil;
 import hudson.model.AbstractBuild;
 import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitChangeSet;
+import hudson.plugins.git.Revision;
 import hudson.plugins.git.util.BuildData;
 import hudson.plugins.mercurial.MercurialTagAction;
 import hudson.scm.ChangeLogSet;
@@ -35,9 +36,14 @@ public class ScmDataCollector {
         if (PluginUtil.isGitPluginInstalled() && build.getAction(BuildData.class) != null) {
             BuildData gitScm = build.getAction(BuildData.class);
             String repoUrl = (String)(gitScm.getRemoteUrls()).toArray()[0];
-            String repoRevision = gitScm.getLastBuiltRevision().getSha1String();
-            String repoBranchName =  ((List<Branch>) gitScm.getLastBuiltRevision().getBranches()).get(0).getName();
-            repositoryLine = String.format("[%s], %s, branch: %s", repoUrl, repoRevision, repoBranchName);
+            Revision revision = gitScm.getLastBuiltRevision();
+            if (revision != null) { //revision can be null for first shallow clone
+                String repoRevision = gitScm.getLastBuiltRevision().getSha1String();
+                String repoBranchName =  ((List<Branch>) gitScm.getLastBuiltRevision().getBranches()).get(0).getName();
+                repositoryLine = String.format("[%s], %s, branch: %s", repoUrl, repoRevision, repoBranchName);
+            } else {
+                repositoryLine = String.format("[%s], revision information not available with shallow clone at first run", repoUrl);
+            }
         } else if (PluginUtil.isMercurialPluginInstalled() && build.getAction(MercurialTagAction.class) != null) {
             MercurialTagAction hgScm = build.getAction(MercurialTagAction.class);
             repositoryLine = hgScm.getId();
